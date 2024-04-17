@@ -6,7 +6,7 @@
 
 
 motor_t motors[NR_MOTORS];
-memset()
+memset();
 
 ret_t move(uint32_t steps, dir_t dir, pin motorPin, pin dirPin)
 {
