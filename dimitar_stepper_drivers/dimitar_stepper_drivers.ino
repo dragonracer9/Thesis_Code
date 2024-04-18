@@ -82,7 +82,7 @@ void loop()
     }
 }
 
-void receiveMarkers()
+void receiveMarkers() // NOTE: this protocol relies on there being no random strings thrown at the board
 {
     static bool receivingInProgress[20] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
     static byte index = 0;
