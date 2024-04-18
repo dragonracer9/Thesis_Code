@@ -1,7 +1,7 @@
 /**
  * @file simple_stepper.h
  * @author Vikram Damani (vdamani@ethz.ch)
- * @brief Simple generic stepper motor driver
+ * @brief Simple stepper motor driver (definitely not generic any more though)
  * @version 0.1
  * @date 2024-04-15
  *
@@ -18,14 +18,6 @@
 #include "__globals__.h"
 #include "pins.h"
 #include <stdint.h>
-
-typedef enum STEPPER_RETURN {
-    SUCCESS,
-    WRONG_FMT,
-    LOCKED,
-    ERROR,
-    SPICY
-} ret_t;
 
 typedef enum MOTOR_STATE {
     STEPPED,

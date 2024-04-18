@@ -1,43 +1,85 @@
 #include "recieve.h"
 
+ret_t handle_transmission(packet_t* motor)
+{
+    char packet[5];
+    ret_t ret = recieve_packet(packet);
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    ret = parse_packet();
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    return ret_t::SUCCESS;
+}
 
-/**
- * @brief Recieve a message from the serial port
- * USES DIMITAR'S CODE
- * 
- */
+ret_t recieve_packet(packet_t* packet)
+{
+    if (Serial.available()) {
+        char c = Serial.read();
+        if (c == '~') {
+            // we have a packet
+
+            // read the packet
+            for (uint8_t i {0} ; i < 5; i++) {
+                if (Serial.available()) {
+                    packet[i] = Serial.read();
+                } else {
+                    return ret_t::SPICY; // not enough data or something went wrong. the first is user error, the second is just weird
+                }
+            }
+            // check the end byte
+            if (Serial.available()) {
+                char end = Serial.read();
+                if (end == '*') {
+                    return ret_t::SUCCESS;
+                } else {
+                    return ret_t::WRONG_FMT; // no end byte or wrong end byte
+                }
+            } else {
+                return ret_t::SPICY; // cant read last byte???
+            }
+
+        } else { // wrong start byte
+            return ret_t::WRONG_FMT;
+        }
+    } else {
+        return ret_t::ERROR;
+    }
+    // this should never happen but just in case
+    return ret_t::LITERALLY_IMPOSSIBLE; // actually, if it does reach this, I'm going to be very impressed
+} // it turns out if you're consistent with the return value thing, it gets quite full lol
+
+ret_t
+
+/****************************************************
+ * DIMITAR'S CODE ((START))
+ * DO NOT TOUCH
+ * **DEPRECATED**
+ ***************************************************/
 void receiveMarkers() // NOTE: this protocol relies on there being no random strings thrown at the board
 {
-    static bool receivingInProgress[20] = {false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false};
+    static bool receivingInProgress[20] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
     static byte index = 0;
-    char startMarkers[20] = {'<', '[', '(', '{', '@', '-', '$', 'A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y'};
-    char endMarkers[20] = {'>', ']', ')', '}', '!', '%', '&', 'B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z'};
+    char startMarkers[20] = { '<', '[', '(', '{', '@', '-', '$', 'A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y' };
+    char endMarkers[20] = { '>', ']', ')', '}', '!', '%', '&', 'B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z' };
     char data;
 
-    while (Serial.available() > 0 && !newData)
-    {
+    while (Serial.available() > 0 && !newData) {
         data = Serial.read();
 
-        for (int i = 0; i < 20; i++)
-        {
-            if (receivingInProgress[i])
-            {
-                if (data != endMarkers[i])
-                {
+        for (int i = 0; i < 20; i++) {
+            if (receivingInProgress[i]) {
+                if (data != endMarkers[i]) {
                     receivedChars[index++] = data;
                     if (index >= NUM_CHARS)
                         index = NUM_CHARS - 1;
-                }
-                else
-                {
+                } else {
                     receivedChars[index] = '\0'; // Terminate the string
                     receivingInProgress[i] = false;
                     index = 0;
                     newData = true;
                 }
-            }
-            else if (data == startMarkers[i])
-            {
+            } else if (data == startMarkers[i]) {
                 memset(markerFlags, false, sizeof(markerFlags));
                 markerFlags[i] = true;
                 receivingInProgress[i] = true;
@@ -60,10 +102,8 @@ void processReceivedData()
     //    Serial.print(markerType);
     //    Serial.println(" ");
 
-    if (motorIndex >= 0 && motorIndex < NUM_MOTORS)
-    {
-        switch (markerType)
-        {
+    if (motorIndex >= 0 && motorIndex < NUM_MOTORS) {
+        switch (markerType) {
         case 0:
             handleContinuousRotationMarker(motorIndex);
             break;
@@ -77,9 +117,7 @@ void processReceivedData()
             handleSteppedRotation(motorIndex);
             break;
         }
-    }
-    else
-    {
+    } else {
         // Handle error or unexpected marker index
         Serial.println("Error: Unexpected marker index");
     }
@@ -89,10 +127,30 @@ void processReceivedData()
 
 int identifyReceivedMarker()
 {
-    for (int i = 0; i < 20; i++)
-    {
+    for (int i = 0; i < 20; i++) {
         if (markerFlags[i])
             return i;
     }
     return -1; // Marker not found
+}
+
+void setRotationSpeed(int motorIndex)
+{
+    speedRotation[motorIndex] = atof(receivedChars);
+    half_pulse_duration_us[motorIndex] = HALF_PULSE_FACTOR / speedRotation[motorIndex];
+    time_of_next_half_pulse[motorIndex] = micros();
+    Serial.print("Motor ");
+    Serial.print(motorIndex + 1);
+    Serial.println(" rotational speed is [deg/sec]: ");
+    Serial.println(speedRotation[motorIndex]);
+}
+
+void setStepsNumber(int motorIndex)
+{
+    //    int motorIndex = identifyReceivedMarker() / 4; // Example to get motorIndex if needed.
+    stepsToMove[motorIndex] = atof(receivedChars); // convert the array to integer
+    Serial.print("Motor ");
+    Serial.print(motorIndex + 1);
+    Serial.print(" steps to execute: ");
+    Serial.println(stepsToMove[motorIndex]);
 }
