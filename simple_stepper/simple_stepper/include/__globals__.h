@@ -11,8 +11,8 @@ typedef enum STEPPER_RETURN {
     WRONG_FMT,
     LOCKED,
     ERROR,
-    SPICY,
     LITERALLY_IMPOSSIBLE,
+    SPICY,
 } ret_t;
 
 #endif //GLOBALS
