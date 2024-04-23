@@ -8,17 +8,16 @@
  *
  * @return ret_t
  */
-inline ret_t [[nodiscard]] init_steppers()
-{
-    for (uint8_t i = 0; i < NR_MOTORS; i++) {
-        pinMode(MOTOR_PINS[i], OUTPUT);
-        pinMode(DIR_PINS[i], OUTPUT);
-        /* digitalWrite(motorPins[i], LOW);
-        digitalWrite(dirPins[i], LOW); */
-        // TODO: determine if this is necessary
-    } // Set the motor pins as outputs
-    // since all motors are locked, we can set the enable pin to low
-    return ret_t::SUCCESS;
+[[nodiscard]] inline ret_t init_steppers() {
+  for (uint8_t i = 0; i < NR_MOTORS; i++) {
+    pinMode(MOTOR_PINS[i], OUTPUT);
+    pinMode(DIR_PINS[i], OUTPUT);
+    /* digitalWrite(motorPins[i], LOW);
+    digitalWrite(dirPins[i], LOW); */
+    // TODO: determine if this is necessary
+  } // Set the motor pins as outputs
+  // since all motors are locked, we can set the enable pin to low
+  return ret_t::SUCCESS;
 }
 
 /**
@@ -27,14 +26,13 @@ inline ret_t [[nodiscard]] init_steppers()
  * @param u_step_fact
  * @return constexpr uint32_t
  */
-inline constexpr uint32_t
-    [[nodiscard]] calc_half_pulse_fact(const uint8_t u_step_fact)
-{
-    return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
+inline constexpr uint32_t calc_half_pulse_fact(const uint8_t u_step_fact) {
+  return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
 }
 
 // half pulse factor given `microstepping_factor`
-static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_factor);
+static constexpr uint32_t half_pulse_fact =
+    calc_half_pulse_fact(microstepping_factor);
 
 /**
  * @brief Set the speed of motor at motor index and sets it's half pulse
@@ -44,14 +42,13 @@ static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_f
  * @param speed  (double)
  * @return constexpr ret_t
  */
-inline constexpr ret_t
-    [[nodiscard]] set_speed(const uint8_t motor_index,
-        const double speed) //[[noexcept]]
+[[nodiscard]] inline constexpr ret_t
+set_speed(const uint8_t motor_index, const double speed) //[[noexcept]]
 {
-    rotation_speeds[motor_index] = speed;
-    half_pulse_duration_us[motor_index] = half_pulse_fact / speed;
-    // TODO
-    return ret_t::SUCCESS;
+  rotation_speeds[motor_index] = speed;
+  half_pulse_duration_us[motor_index] = half_pulse_fact / speed;
+  // TODO
+  return ret_t::SUCCESS;
 }
 
 /**
@@ -61,12 +58,12 @@ inline constexpr ret_t
  * @param steps
  * @return constexpr ret_t
  */
-inline constexpr ret_t
-    [[nodiscard]] set_steps(const uint8_t motor_index,
-        const uint32_t steps) // [[noexcept]]
+[[nodiscard]] inline constexpr ret_t
+set_steps(const uint8_t motor_index,
+          const uint32_t steps) // [[noexcept]]
 {
-    stepsToMove[motor_index] = steps;
-    return ret_t::SUCCESS;
+  stepsToMove[motor_index] = steps;
+  return ret_t::SUCCESS;
 }
 
 /**
@@ -79,35 +76,36 @@ inline constexpr ret_t
  * @param half_pulse
  * @return ret_t
  */
-ret_t [[nodiscard]] __move(const uint32_t steps, const dir_t dir,
-    const uint8_t motorIndex,
-    const uint32_t half_pulse)
-{
-    if (motors[motorIndex] == state_t::BLOCKED)
-        return ret_t::LOCKED;
+[[nodiscard]] ret_t __move(const uint32_t steps, const dir_t dir,
+                           const uint8_t motorIndex,
+                           const uint32_t half_pulse) {
+  if (motors[motorIndex] == state_t::BLOCKED)
+    return ret_t::LOCKED;
 
-    digitalWrite(DIR_PINS[motorIndex], (uint8_t)dir); // Set the direction of the motor movement
+  digitalWrite(DIR_PINS[motorIndex],
+               (uint8_t)dir); // Set the direction of the motor movement
 
-    for (uint32_t i = 0; i < steps; i++) {
-        digitalWrite(MOTOR_PINS[motorIndex], HIGH);
-        delayMicroseconds(half_pulse);
-        digitalWrite(MOTOR_PINS[motorIndex], LOW);
-        delayMicroseconds(half_pulse);
-    }
-    return ret_t::SUCCESS;
+  for (uint32_t i = 0; i < steps; i++) {
+    digitalWrite(MOTOR_PINS[motorIndex], HIGH);
+    delayMicroseconds(half_pulse);
+    digitalWrite(MOTOR_PINS[motorIndex], LOW);
+    delayMicroseconds(half_pulse);
+  }
+  return ret_t::SUCCESS;
 }
 
 /**
- * @brief Moves motor at motor index by given number of steps. Speed can be set in `set_speed`
+ * @brief Moves motor at motor index by given number of steps. Speed can be set
+ * in `set_speed`
  *
  * @param motor_index
  * @param steps
  * @param dir
  * @return ret_t
  */
-ret_t [[nodiscard]] move_steps(const uint8_t motor_index, const uint32_t steps, const dir_t dir)
-{
-    return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
+[[nodiscard]] ret_t move_steps(const uint8_t motor_index, const uint32_t steps,
+                               const dir_t dir) {
+  return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
 }
 
 /**
@@ -116,9 +114,13 @@ ret_t [[nodiscard]] move_steps(const uint8_t motor_index, const uint32_t steps, 
  * @param angle - (double) the angle to move, in [rad]
  * @return constexpr uint32_t
  */
-inline constexpr uint32_t angle_to_steps(double angle) // FIXME: tune to correct values
+[[nodiscard]] inline constexpr uint32_t
+angle_to_steps(double angle) // FIXME: tune to correct values
 {
-    return (uint32_t)((angle / ((double)2 * PI)) * (double)steps_per_revolution); // i have no idea if this is correct
+  return (
+      uint32_t)((angle / ((double)2 * PI)) *
+                (double)
+                    steps_per_revolution); // i have no idea if this is correct
 } // number of roations * steps per revolutions
 
 /**
@@ -129,8 +131,8 @@ inline constexpr uint32_t angle_to_steps(double angle) // FIXME: tune to correct
  * @param dir
  * @return ret_t
  */
-ret_t [[nodiscard]] move_angle(const uint8_t motor_index, const double angle, const dir_t dir)
-{
-    uint32_t steps = angle_to_steps(angle);
-    return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
+[[nodiscard]] ret_t move_angle(const uint8_t motor_index, const double angle,
+                               const dir_t dir) {
+  uint32_t steps = angle_to_steps(angle);
+  return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
 }
