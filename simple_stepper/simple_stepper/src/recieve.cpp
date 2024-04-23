@@ -2,7 +2,7 @@
 #include <typeinfo>
 #include <vector>
 
-ret_t handle_transmission(packet_t* const motor)
+ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek() to ckeck to run transmission before calling this ig ?
 {
     uint8_t packet[5];
     ret_t ret = recieve_packet(packet);

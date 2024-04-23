@@ -111,16 +111,26 @@ ret_t [[nodiscard]] move_steps(const uint8_t motor_index, const uint32_t steps, 
 }
 
 /**
- * @brief 
- * 
- * @param steps 
- * @return constexpr uint32_t 
+ * @brief
+ *
+ * @param angle - (double) the angle to move, in [rad]
+ * @return constexpr uint32_t
  */
 inline constexpr uint32_t angle_to_steps(double angle) // FIXME: tune to correct values
 {
-    return 360; // i have no idea if this is correct
-}
+    return (uint32_t)((angle / ((double)2 * PI)) * (double)steps_per_revolution); // i have no idea if this is correct
+} // number of roations * steps per revolutions
 
+/**
+ * @brief moves motor at motor index by specified angle
+ *
+ * @param motor_index
+ * @param angle
+ * @param dir
+ * @return ret_t
+ */
 ret_t [[nodiscard]] move_angle(const uint8_t motor_index, const double angle, const dir_t dir)
 {
+    uint32_t steps = angle_to_steps(angle);
+    __move(steps, dir, motor_index, half_pulse_duration_us[motor_index])
 }

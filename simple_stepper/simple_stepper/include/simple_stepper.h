@@ -63,6 +63,6 @@ inline constexpr ret_t set_steps(const uint8_t, const uint32_t);
 ret_t __move(const uint32_t, const dir_t, const uint8_t, const uint32_t);
 
 ret_t move_steps(uint8_t, uint32_t, dir_t);
-ret_t continuous_rotation(int8_t, dir_t);
 ret_t move_angle(uint8_t, double, dir_t);
+// ret_t continuous_rotation(int8_t, dir_t);
 #endif // !STP
