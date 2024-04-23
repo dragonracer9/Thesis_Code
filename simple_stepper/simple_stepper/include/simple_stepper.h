@@ -41,28 +41,42 @@ typedef enum direction {
 
 inline constexpr uint16_t steps_per_revolution { 200 };
 inline constexpr uint8_t microstepping_factor { 16 };
-inline constexpr uint32_t calc_half_pulse_fact(const uint8_t);
-
 inline constexpr float STEPS_PER_UM[NR_MOTORS] { 1, 1, 1, 1, 1 };
-inline float rotation_speeds[NR_MOTORS] { 100, 100, 100, 100, 100 };
-
-inline uint32_t half_pulse_duration_us[NR_MOTORS] { 562, 562, 562, 562, 562 };
-inline uint32_t time_of_next_half_pulse[NR_MOTORS] { 0, 0, 0, 0, 0 };
-
-inline uint32_t stepsToMove[NR_MOTORS] { 0, 0, 0, 0, 0 };
-
-inline state_t motors[NR_MOTORS] {
-    state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED
-};
 
 inline constexpr uint32_t angle_to_steps(double);
 
-inline ret_t init_steppers();
-inline constexpr ret_t set_speed(const uint8_t, const double);
-inline constexpr ret_t set_steps(const uint8_t, const uint32_t);
-ret_t __move(const uint32_t, const dir_t, const uint8_t, const uint32_t);
+class Stepper {
+public:
+    constexpr Stepper(void);
+    constexpr Stepper(Stepper&&) = default;
+    constexpr Stepper(const Stepper&) = default;
+    constexpr Stepper& operator=(Stepper&&) = default;
+    constexpr Stepper& operator=(const Stepper&) = default;
+    ~Stepper() = default;
 
-ret_t move_steps(uint8_t, uint32_t, dir_t);
-ret_t move_angle(uint8_t, double, dir_t);
-// ret_t continuous_rotation(int8_t, dir_t);
+    inline ret_t init_steppers();
+    inline constexpr ret_t set_speed(const uint8_t, const double);
+    inline constexpr ret_t set_steps(const uint8_t, const uint32_t);
+    ret_t __move(const uint32_t, const dir_t, const uint8_t, const uint32_t);
+
+    ret_t move_steps(uint8_t, uint32_t, dir_t);
+    ret_t move_angle(uint8_t, double, dir_t);
+    // ret_t continuous_rotation(int8_t, dir_t);
+private:
+    state_t motors[NR_MOTORS];
+
+    float rotation_speeds[NR_MOTORS];
+    uint32_t stepsToMove[NR_MOTORS];
+    inline constexpr uint32_t calc_half_pulse_fact(const uint8_t);
+
+    uint32_t half_pulse_duration_us[NR_MOTORS];
+};
 #endif // !STP
+
+Stepper::Stepper(void)
+    : motors { state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED }
+    , rotation_speeds { 100, 100, 100, 100, 100 }
+    , half_pulse_duration_us { 562, 562, 562, 562, 562 }
+    , stepsToMove { 0, 0, 0, 0, 0 }
+{
+}
