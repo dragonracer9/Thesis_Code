@@ -74,7 +74,7 @@ ret_t parse_packet(uint8_t* const arr, packet_t* const packet)
  * DO NOT TOUCH
  * **DEPRECATED**
  ***************************************************/
-
+/* 
 void receiveMarkers() // NOTE: this protocol relies on there being no random strings thrown at the board
 {
     static bool receivingInProgress[20] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
@@ -174,4 +174,4 @@ void setStepsNumber(int motorIndex)
     Serial.print(motorIndex + 1);
     Serial.print(" steps to execute: ");
     Serial.println(dimitar_stepsToMove[motorIndex]);
-}
+} */
