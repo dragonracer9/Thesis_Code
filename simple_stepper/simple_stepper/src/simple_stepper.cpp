@@ -132,5 +132,5 @@ inline constexpr uint32_t angle_to_steps(double angle) // FIXME: tune to correct
 ret_t [[nodiscard]] move_angle(const uint8_t motor_index, const double angle, const dir_t dir)
 {
     uint32_t steps = angle_to_steps(angle);
-    __move(steps, dir, motor_index, half_pulse_duration_us[motor_index])
+    return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
 }
