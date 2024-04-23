@@ -52,9 +52,9 @@ typedef struct packet {
     uint8_t speed;
 } packet_t;
 
-ret_t handle_transmission();
-ret_t recieve_packet /*__attribute__((unused))*/ (uint8_t*);
-ret_t parse_packet /*__attribute__((unused))*/ (uint8_t*, packet_t*);
+ret_t handle_transmission(packet_t* const);
+ret_t recieve_packet /*__attribute__((unused))*/ (uint8_t* const);
+ret_t parse_packet /*__attribute__((unused))*/ (uint8_t* const, packet_t* const);
 
 /****************************************************
  * DIMITAR'S CODE ((START))

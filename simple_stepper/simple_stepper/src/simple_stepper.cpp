@@ -27,7 +27,8 @@ inline ret_t [[nodiscard]] init_steppers()
  * @param u_step_fact
  * @return constexpr uint32_t
  */
-inline constexpr uint32_t [[nodiscard]] calc_half_pulse_fact(uint8_t u_step_fact)
+inline constexpr uint32_t
+    [[nodiscard]] calc_half_pulse_fact(const uint8_t u_step_fact)
 {
     return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
 }
@@ -36,13 +37,16 @@ inline constexpr uint32_t [[nodiscard]] calc_half_pulse_fact(uint8_t u_step_fact
 static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_factor);
 
 /**
- * @brief Set the speed of motor at motor index and sets it's half pulse duration for pwm control
+ * @brief Set the speed of motor at motor index and sets it's half pulse
+ * duration for pwm control
  *
  * @param motor_index (uint8_t)
  * @param speed  (double)
  * @return constexpr ret_t
  */
-inline constexpr ret_t [[nodiscard]] set_speed(uint8_t motor_index, double speed) //[[noexcept]]
+inline constexpr ret_t
+    [[nodiscard]] set_speed(const uint8_t motor_index,
+        const double speed) //[[noexcept]]
 {
     rotation_speeds[motor_index] = speed;
     half_pulse_duration_us[motor_index] = half_pulse_fact / speed;
@@ -52,14 +56,17 @@ inline constexpr ret_t [[nodiscard]] set_speed(uint8_t motor_index, double speed
 
 /**
  * @brief Set the number of steps the motor at motor index should move
- * 
- * @param motor_index 
- * @param steps 
- * @return constexpr ret_t 
+ *
+ * @param motor_index
+ * @param steps
+ * @return constexpr ret_t
  */
-inline constexpr ret_t [[nodiscard]] set_steps(uint8_t motor_index, uint32_t steps)
+inline constexpr ret_t
+    [[nodiscard]] set_steps(const uint8_t motor_index,
+        const uint32_t steps) // [[noexcept]]
 {
     stepsToMove[motor_index] = steps;
+    return ret_t::SUCCESS;
 }
 
 /**
@@ -72,11 +79,14 @@ inline constexpr ret_t [[nodiscard]] set_steps(uint8_t motor_index, uint32_t ste
  * @param half_pulse
  * @return ret_t
  */
-ret_t [[nodiscard]] _move(uint32_t steps, dir_t dir, uint8_t motorIndex, pin dirPin, uint32_t half_pulse)
+ret_t [[nodiscard]] __move(const uint32_t steps, const dir_t dir,
+    const uint8_t motorIndex,
+    const uint32_t half_pulse)
 {
     if (motors[motorIndex] == state_t::BLOCKED)
         return ret_t::LOCKED;
-    digitalWrite(dirPin, (uint8_t)dir); // Set the direction of the motor movement
+
+    digitalWrite(DIR_PINS[motorIndex], (uint8_t)dir); // Set the direction of the motor movement
 
     for (uint32_t i = 0; i < steps; i++) {
         digitalWrite(MOTOR_PINS[motorIndex], HIGH);
@@ -85,4 +95,32 @@ ret_t [[nodiscard]] _move(uint32_t steps, dir_t dir, uint8_t motorIndex, pin dir
         delayMicroseconds(half_pulse);
     }
     return ret_t::SUCCESS;
+}
+
+/**
+ * @brief Moves motor at motor index by given number of steps. Speed can be set in `set_speed`
+ *
+ * @param motor_index
+ * @param steps
+ * @param dir
+ * @return ret_t
+ */
+ret_t [[nodiscard]] move_steps(const uint8_t motor_index, const uint32_t steps, const dir_t dir)
+{
+    return __move(steps, dir, motor_index, half_pulse_duration_us[motor_index]);
+}
+
+/**
+ * @brief 
+ * 
+ * @param steps 
+ * @return constexpr uint32_t 
+ */
+inline constexpr uint32_t angle_to_steps(double angle) // FIXME: tune to correct values
+{
+    return 360; // i have no idea if this is correct
+}
+
+ret_t [[nodiscard]] move_angle(const uint8_t motor_index, const double angle, const dir_t dir)
+{
 }

@@ -39,10 +39,9 @@ typedef enum direction {
     LARGE_NEG
 } axis_t; */
 
-inline constexpr uint16_t steps_per_revolution {200};
-inline constexpr uint8_t microstepping_factor {16};
-inline constexpr uint32_t calc_half_pulse_fact(uint8_t);
-
+inline constexpr uint16_t steps_per_revolution { 200 };
+inline constexpr uint8_t microstepping_factor { 16 };
+inline constexpr uint32_t calc_half_pulse_fact(const uint8_t);
 
 inline constexpr float STEPS_PER_UM[NR_MOTORS] { 1, 1, 1, 1, 1 };
 inline float rotation_speeds[NR_MOTORS] { 100, 100, 100, 100, 100 };
@@ -56,12 +55,14 @@ inline state_t motors[NR_MOTORS] {
     state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED
 };
 
-inline ret_t [[nodiscard]] init_steppers();
-inline constexpr ret_t [[nodiscard]] set_speed(uint8_t, double);
-inline constexpr ret_t [[nodiscard]] set_steps(uint8_t, uint32_t);
-ret_t [[nodiscard]] _move(uint32_t, dir_t, pin, pin);
+inline constexpr uint32_t angle_to_steps(double);
 
-ret_t move_steps() ;
-ret_t continuous_rotation();
-ret_t move_angle();
+inline ret_t init_steppers();
+inline constexpr ret_t set_speed(const uint8_t, const double);
+inline constexpr ret_t set_steps(const uint8_t, const uint32_t);
+ret_t __move(const uint32_t, const dir_t, const uint8_t, const uint32_t);
+
+ret_t move_steps(uint8_t, uint32_t, dir_t);
+ret_t continuous_rotation(int8_t, dir_t);
+ret_t move_angle(uint8_t, double, dir_t);
 #endif // !STP

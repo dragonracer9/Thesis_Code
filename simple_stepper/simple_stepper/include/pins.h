@@ -28,7 +28,6 @@ inline constexpr uint8_t NR_MOTORS { 5 }; // number of motors
 
 // X Y Z 4 5
 inline constexpr pin MOTOR_PINS[NR_MOTORS] { STEP_X, STEP_Y, STEP_Z, STEP_PIN_4, STEP_PIN_5 };
-// X Y Z 4 5
 inline constexpr pin DIR_PINS[NR_MOTORS] { DIR_X, DIR_Y, DIR_Z, DIR_PIN_4, DIR_PIN_5 };
 
 #endif

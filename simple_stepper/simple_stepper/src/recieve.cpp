@@ -2,7 +2,7 @@
 #include <typeinfo>
 #include <vector>
 
-ret_t handle_transmission(packet_t* motor)
+ret_t handle_transmission(packet_t* const motor)
 {
     uint8_t packet[5];
     ret_t ret = recieve_packet(packet);
@@ -14,7 +14,7 @@ ret_t handle_transmission(packet_t* motor)
     return ret_t::SUCCESS;
 }
 
-ret_t recieve_packet(uint8_t* packet)
+ret_t recieve_packet(uint8_t* const packet)
 {
     if (Serial.available()) {
         char c = Serial.read();
@@ -51,7 +51,7 @@ ret_t recieve_packet(uint8_t* packet)
     return ret_t::LITERALLY_IMPOSSIBLE; // actually, if it does reach this, I'm going to be very impressed
 } // it turns out if you're consistent with the return value thing, it gets quite full lol
 
-ret_t parse_packet(uint8_t* arr, packet_t* packet)
+ret_t parse_packet(uint8_t* const arr, packet_t* const packet)
 {
     packet->motor = arr[0];
     packet->state = arr[1];
@@ -112,7 +112,7 @@ void processReceivedData()
     if (!newData)
         return;
     int markerIndex = identifyReceivedMarker();
-    int motorIndex = markerIndex / 4;
+    int motorIndex = markerIndex / 4; // BECAUSE OF INTEGER DIVISION
     //    Serial.println("Identified motor index: ");
     //    Serial.print(motorIndex);
     //    Serial.println(" ");
