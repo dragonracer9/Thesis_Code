@@ -2,14 +2,27 @@
 #include "Arduino.h"
 #endif
 
-#include "../include/simple_stepper.h"
+#include "../SimpleStepper.h"
+
+#ifndef STP
+#warning "STP not defined"
+#endif // !STP
+#ifndef _RECIEVE_H
+#warning "_RECIEVE_H not defined"
+#endif // !_RECIEVE_H
+#ifndef GLOBALS
+#warning "GLOBALS not defined"
+#endif // !GLOBALS
+#ifndef PINS
+#warning "PINS not defined"
+#endif // !PINS
 
 /**
  * @brief initialises stepper pins
  *
  * @return ret_t
  */
-[[nodiscard]] inline ret_t Stepper::init_steppers() const //[[noexcept]]
+ret_t Stepper::set_pins(void) const //[[noexcept]]
 {
     for (uint8_t i = 0; i < NR_MOTORS; i++) {
         pinMode(MOTOR_PINS[i], OUTPUT);
@@ -22,16 +35,6 @@
     return ret_t::SUCCESS;
 }
 
-/**
- * @brief calculates half pulse factor of pwm to set correct speed for motors
- *
- * @param u_step_fact
- * @return constexpr uint32_t
- */
-inline constexpr uint32_t calc_half_pulse_fact(const uint8_t u_step_fact)
-{
-    return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
-}
 
 // half pulse factor given `microstepping_factor`
 static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_factor);
@@ -42,29 +45,13 @@ static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_f
  *
  * @param motor_index (uint8_t)
  * @param speed  (double)
- * @return constexpr ret_t
+ * @return ret_t
  */
-[[nodiscard]] inline constexpr ret_t
-Stepper::set_speed(const uint8_t motor_index, const double speed) //[[noexcept]]
+[[nodiscard]] ret_t Stepper::set_speed(const uint8_t motor_index, const uint8_t speed) noexcept //[[noexcept]]
 {
     rotation_speeds[motor_index] = speed;
-    half_pulse_duration_us[motor_index] = half_pulse_fact / speed;
+    half_pulse_duration_us[motor_index] = (uint32_t)(half_pulse_fact / (float)speed);
     // TODO
-    return ret_t::SUCCESS;
-}
-
-/**
- * @brief Set the number of steps the motor at motor index should move
- *
- * @param motor_index
- * @param steps
- * @return constexpr ret_t
- */
-[[nodiscard]] inline constexpr ret_t
-Stepper::set_steps(const uint8_t motor_index,
-    const uint32_t steps) // [[noexcept]]
-{
-    stepsToMove[motor_index] = steps;
     return ret_t::SUCCESS;
 }
 

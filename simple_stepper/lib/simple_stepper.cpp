@@ -2,14 +2,28 @@
 #include "Arduino.h"
 #endif
 
-#include "../include/simple_stepper.h"
+#include "simple_stepper.h"
+
+#ifndef STP
+#warning "STP not defined"    
+#endif // !STP
+#ifndef _RECIEVE_H
+#warning "_RECIEVE_H not defined"
+#endif // !_RECIEVE_H
+#ifndef GLOBALS
+#warning "GLOBALS not defined"
+#endif // !GLOBALS
+#ifndef PINS
+#warning "PINS not defined"
+#endif // !PINS
+
 
 /**
  * @brief initialises stepper pins
  *
  * @return ret_t
  */
-[[nodiscard]] inline ret_t Stepper::init_steppers() const //[[noexcept]]
+[[nodiscard]] inline ret_t Stepper::init_steppers(void) const //[[noexcept]]
 {
     for (uint8_t i = 0; i < NR_MOTORS; i++) {
         pinMode(MOTOR_PINS[i], OUTPUT);
