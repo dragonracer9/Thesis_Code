@@ -58,6 +58,11 @@ typedef struct packet {
         , speed(0)
     {
     }
+
+    inline int to_string(char* const buffer) const
+    {
+        return sprintf(buffer, "motor: %d, state: %d, direction: %d, steps: %d, speed: %d", motor, state, direction, steps, speed);
+    }
 } packet_t;
 
 inline bool new_data { false };

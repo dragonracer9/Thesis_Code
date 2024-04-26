@@ -1,6 +1,6 @@
 #include "receive.h"
-#include <typeinfo>
-#include <vector>
+//#include <typeinfo>
+//#include <vector>
 
 ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek() to ckeck to run transmission before calling this ig ?
 {

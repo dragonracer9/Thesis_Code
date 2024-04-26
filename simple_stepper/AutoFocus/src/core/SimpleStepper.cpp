@@ -1,6 +1,8 @@
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #endif
+#include "SimpleStepper.h"
+
 
 /**
  * @brief initialises stepper pins

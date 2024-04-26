@@ -20,8 +20,6 @@
 #include "utility/receive.h"
 #include <stdint.h>
 
-#include "SimpleStepper.h"
-
 #ifndef STP
 #warning "STP not defined"
 #endif // !STP
