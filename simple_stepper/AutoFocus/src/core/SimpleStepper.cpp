@@ -2,21 +2,6 @@
 #include "Arduino.h"
 #endif
 
-#include "../SimpleStepper.h"
-
-#ifndef STP
-#warning "STP not defined"
-#endif // !STP
-#ifndef _RECIEVE_H
-#warning "_RECIEVE_H not defined"
-#endif // !_RECIEVE_H
-#ifndef GLOBALS
-#warning "GLOBALS not defined"
-#endif // !GLOBALS
-#ifndef PINS
-#warning "PINS not defined"
-#endif // !PINS
-
 /**
  * @brief initialises stepper pins
  *
@@ -35,6 +20,11 @@ ret_t Stepper::set_pins(void) const //[[noexcept]]
     return ret_t::SUCCESS;
 }
 
+ret_t Stepper::set_state(const uint8_t motor_index, const state_t state)
+{
+    motors[motor_index] = state;
+    return ret_t::SUCCESS;
+}
 
 // half pulse factor given `microstepping_factor`
 static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_factor);

@@ -15,22 +15,23 @@
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #endif
-#include "__globals__.h"
-#include "pins.h"
-#include "receive.h"
+#include "../include/__globals__.h"
+#include "../include/pins.h"
 #include <stdint.h>
 
 #define sign(x) (((x) > 0) - ((x) < 0)) // nice to have, return values {-1, 0, 1}
 #undef abs
 #define abs(x) ((x) * sign((x))) // better (branchless)
 
-typedef enum MOTOR_STATE {
-    STEPPED,
-    CONTINUUOUS,
+typedef enum class MOTOR_STATE : int {
+    // STEPPED,
+    // CONTINUUOUS,
+
+    UNBLOCKED,
     BLOCKED,
 } state_t;
 
-typedef enum direction {
+typedef enum class direction : int {
     FWD,
     BWD
 } dir_t;
@@ -50,6 +51,8 @@ inline constexpr float STEPS_PER_UM[NR_MOTORS] { 1, 1, 1, 1, 1 };
 
 inline constexpr uint32_t angle_to_steps(double);
 
+inline constexpr state_t int_to_state(uint8_t);
+
 class Stepper {
 public:
     constexpr Stepper(void) noexcept
@@ -66,9 +69,10 @@ public:
     constexpr Stepper& operator=(const Stepper&) = delete; */
     ~Stepper() = default;
 
-    ret_t init_steppers(void) const noexcept;
-    inline constexpr ret_t set_speed(const uint8_t, const double) noexcept;
-    inline constexpr ret_t set_steps(const uint8_t, const uint32_t) noexcept;
+    ret_t set_pins(void) const noexcept;
+    ret_t set_speed(const uint8_t, const uint8_t) noexcept;
+    ret_t set_state(const uint8_t, const state_t);
+    // inline constexpr ret_t set_steps(const uint8_t, const uint32_t) noexcept;
     ret_t __move(const uint32_t, const dir_t, const uint8_t, const uint32_t) noexcept;
 
     ret_t move_steps(uint8_t, uint32_t, dir_t) noexcept;
@@ -79,10 +83,30 @@ private:
 
     float rotation_speeds[NR_MOTORS];
     uint32_t stepsToMove[NR_MOTORS];
-    inline constexpr uint32_t calc_half_pulse_fact(const uint8_t);
 
     uint32_t half_pulse_duration_us[NR_MOTORS];
 };
 
 typedef Stepper stp_t;
+
+/**
+ * @brief calculates half pulse factor of pwm to set correct speed for motors
+ *
+ * @param u_step_fact
+ * @return constexpr uint32_t
+ */
+inline constexpr uint32_t calc_half_pulse_fact(const uint8_t u_step_fact)
+{
+    return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
+}
+
+/**
+ * @brief Takes uint8_t to state_t, where 0 is unblocked and 1 is blocked (other states kinda dont exist atm lol)
+ * 
+ * @return constexpr state_t 
+ */
+inline constexpr state_t int_to_state(uint8_t state)
+{
+    return static_cast<state_t>(state);
+}
 #endif // !STP
