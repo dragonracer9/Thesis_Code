@@ -14,7 +14,7 @@ arduino = serial.Serial(port='COM3',   baudrate=115200, timeout=.1)
 
 
 def transmit(x : NDArray) -> Any:
-    for i in range(5):
+    for i in track(range(5)):
         arduino.write(bytes(x[i],   'utf-8'))
     time.sleep(0.05)
     data = arduino.readline()
