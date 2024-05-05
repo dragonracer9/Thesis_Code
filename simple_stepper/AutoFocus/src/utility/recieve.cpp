@@ -1,13 +1,15 @@
 #include "receive.h"
-//#include <typeinfo>
-//#include <vector>
+// #include <typeinfo>
+// #include <vector>
 
 ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek() to ckeck to run transmission before calling this ig ?
 {
-    uint8_t packet[5];
+    char packet[50] {};
+    packet[49] = '\0'; // so this is a valid string (it doesnt need to be lol)
     ret_t ret = recieve_packet(packet);
     if (ret != ret_t::SUCCESS)
         return ret;
+    // ret = check_packet(); // TODO
     ret = parse_packet(packet, motor);
     if (ret != ret_t::SUCCESS)
         return ret;
@@ -15,7 +17,7 @@ ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek(
     return ret_t::SUCCESS;
 }
 
-ret_t recieve_packet(uint8_t* const packet)
+ret_t recieve_packet(char* const packet)
 {
     if (Serial.available()) {
         char c = Serial.read();
@@ -23,13 +25,8 @@ ret_t recieve_packet(uint8_t* const packet)
             // we have a packet
 
             // read the packet
-            for (uint8_t i { 0 }; i < 5; i++) {
-                if (Serial.available()) {
-                    packet[i] = (uint8_t)Serial.read();
-                } else {
-                    return ret_t::SPICY; // not enough data or something went wrong. the first is user error, the second is just weird
-                }
-            }
+            Serial.readBytesUntil('*', packet, 49); // tbh the length is kinda just a guess lol
+
             // check the end byte
             if (Serial.available()) {
                 char end = Serial.read();
@@ -52,9 +49,25 @@ ret_t recieve_packet(uint8_t* const packet)
     return ret_t::LITERALLY_IMPOSSIBLE; // actually, if it does reach this, I'm going to be very impressed
 } // it turns out if you're consistent with the return value thing, it gets quite full lol
 
+ret_t get_next_token(char* const buffer, char* token = nullptr)
+{
+    constexpr char sep[2] = ",";
+    token = strtok(buffer, sep);
+    if (token != nullptr)
+        return ret_t::SUCCESS;
+    else
+        return ret_t::ERROR;
+}
+
+uint8_t parse_token(char* const token)
+{
+    return atoi(token); // strtoul()
+}
+
 ret_t parse_packet(uint8_t* const arr, packet_t* const packet)
 {
-    packet->motor = arr[0];
+
+    packet->motor = atoi();
     packet->state = arr[1];
     packet->direction = arr[2];
     packet->steps = arr[3];
@@ -75,7 +88,7 @@ ret_t parse_packet(uint8_t* const arr, packet_t* const packet)
  * DO NOT TOUCH
  * **DEPRECATED**
  ***************************************************/
-/* 
+/*
 void receiveMarkers() // NOTE: this protocol relies on there being no random strings thrown at the board
 {
     static bool receivingInProgress[20] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };

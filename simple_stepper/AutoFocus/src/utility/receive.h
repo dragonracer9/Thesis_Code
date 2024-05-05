@@ -7,6 +7,9 @@
 #include "../include/__globals__.h"
 #include "../include/pins.h"
 #include <stdint.h>
+#include <string.h>
+#include <stdlib.h>     /* atoi */
+
 
 /*************************************************
  * |             NEW PROTOCOL                   | *
