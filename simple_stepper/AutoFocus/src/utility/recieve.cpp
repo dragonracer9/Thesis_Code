@@ -1,11 +1,18 @@
 #include "receive.h"
-// #include <typeinfo>
-// #include <vector>
 
+/**
+ * @brief Handles the transmission of a packet and updates the motor data.
+ *
+ * This function receives a packet, checks its validity, and parses it to update the motor data.
+ * If the transmission is successful, it sets the new_data flag to true.
+ *
+ * @param motor A pointer to the motor data structure.
+ * @return The status of the transmission.
+ */
 ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek() to ckeck to run transmission before calling this ig ?
 {
     char packet[50] {};
-    packet[49] = '\0'; // so this is a valid string (it doesnt need to be lol)
+    packet[49] = '\0'; // so this is a valid string
     ret_t ret = recieve_packet(packet);
     if (ret != ret_t::SUCCESS)
         return ret;
@@ -13,10 +20,25 @@ ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek(
     ret = parse_packet(packet, motor);
     if (ret != ret_t::SUCCESS)
         return ret;
+
+    Serial.print("~~ACK**");
     new_data = true;
     return ret_t::SUCCESS;
 }
 
+/** @brief Receives a packet from the serial communication and validates its format.
+ *
+ * This function reads characters from the serial communication until it receives a complete packet.
+ * The packet should start with the '~' character and end with the '*' character.
+ * The function stores the received packet in the provided `packet` buffer.
+ *
+ * @param packet A pointer to the buffer where the received packet will be stored.
+ *         - `ret_t::SUCCESS` if the packet is received successfully. \n
+ *         - `ret_t::WRONG_FMT` if the packet format is incorrect (missing end byte or wrong end byte). \n
+ *         - `ret_t::SPICY` if the last byte of the packet cannot be read. \n
+ *         - `ret_t::ERROR` if there is an error in the serial communication. \n
+ *         - `ret_t::LITERALLY_IMPOSSIBLE` if the function reaches an unreachable return statement. \n
+ */
 ret_t recieve_packet(char* const packet)
 {
     if (Serial.available()) {
@@ -33,14 +55,14 @@ ret_t recieve_packet(char* const packet)
                 if (end == '*') {
                     return ret_t::SUCCESS;
                 } else {
-                    return ret_t::WRONG_FMT; // no end byte or wrong end byte
+                    return ret_t::WRONG_FMT1; // no end byte or wrong end byte
                 }
             } else {
                 return ret_t::SPICY; // cant read last byte???
             }
 
         } else { // wrong start byte
-            return ret_t::WRONG_FMT;
+            return ret_t::WRONG_FMT0;
         }
     } else {
         return ret_t::ERROR;
@@ -49,143 +71,106 @@ ret_t recieve_packet(char* const packet)
     return ret_t::LITERALLY_IMPOSSIBLE; // actually, if it does reach this, I'm going to be very impressed
 } // it turns out if you're consistent with the return value thing, it gets quite full lol
 
-ret_t get_next_token(char* const buffer, char* token = nullptr)
+/**
+ * @brief Parses a token and returns its integer value.
+ *
+ * This function takes a null-terminated string `token` and converts it into an integer value.
+ * The string is expected to represent a valid integer. If the string cannot be converted to an integer,
+ * the behavior is undefined.
+ *
+ * @param token The null-terminated string to be parsed.
+ * @return The integer value represented by the token.
+ */
+const uint8_t parse_token(char* const token)
 {
-    constexpr char sep[2] = ",";
-    token = strtok(buffer, sep);
-    if (token != nullptr)
-        return ret_t::SUCCESS;
-    else
-        return ret_t::ERROR;
+    /// strtoul converts a string to an unsigned long int
+    /// the third argument is the base of the number system
+    /// 10 is for decimal
+    /// the middle argument is a pointer to a char pointer
+    /// when set to null, it is not used
+    const uint8_t val = atoi(token);
+    // Serial.print("Parsed token: ");
+    // Serial.print(token);
+    // Serial.print(" -> ");
+    // Serial.println(val);
+    return val; // i despise this cast
+    // returns 0 if the string is not a valid integer (or if it's 0 lol)
 }
 
-uint8_t parse_token(char* const token)
+/**
+ * @brief Tokenizes the input buffer and extracts motor, state, direction, steps, and speed values.
+ *
+ * @param buffer The input buffer containing the tokens.
+ * @param motor Reference to the variable to store the motor value.
+ * @param state Reference to the variable to store the state value.
+ * @param direction Reference to the variable to store the direction value.
+ * @param steps Reference to the variable to store the steps value.
+ * @param speed Reference to the variable to store the speed value.
+ * @return The result of the tokenization process.
+ */
+ret_t tokenize(char* const buffer, uint8_t& motor, uint8_t& state, uint8_t& direction, uint8_t& steps, uint8_t& speed)
 {
-    return atoi(token); // strtoul()
+    // ngl this is kinda spaghetti
+    char* token = nullptr;
+    // Serial.println("buffer: ");
+    // Serial.println(buffer);
+
+    /// lambda function to get the next token
+    auto get_next_token = [&token](char* const buffer) -> ret_t { // this is a lambda function, it's like a function but it's defined in the scope of another function
+        static constexpr char sep[2] = ",";
+        token = strtok(buffer, sep);
+        if (token != nullptr)
+            return ret_t::SUCCESS;
+        else
+            return ret_t::ERROR;
+    };
+
+    // Ok, i'll explain this only once
+    // we first get the next token (the individual bits of info in the packet between the commas), if it's not successful, we return the error
+    // tbh i'm not sure if we need the functionas a lambda, but strtok is weird and I don't want to mess with it
+    // it's caused me enough pain already
+    // we pass the buffer to the lambda function
+    ret_t ret = get_next_token(buffer);
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    motor = parse_token(token); // we parse the token into a uint8_t intand save it to the motor variable
+
+    ret = get_next_token(nullptr); // because we're using strtok, we pass null to get the next token (it remembers the buffer from the last call)
+    if (ret != ret_t::SUCCESS) // the nullptr thing is weird to me too
+        return ret;
+    state = parse_token(token);
+
+    ret = get_next_token(nullptr); // we do this for all the other tokens
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    direction = parse_token(token);
+
+    ret = get_next_token(nullptr);
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    steps = parse_token(token);
+
+    ret = get_next_token(nullptr);
+    if (ret != ret_t::SUCCESS)
+        return ret;
+    speed = parse_token(token);
+
+    return ret_t::SUCCESS; // if we get here, everything went well
 }
 
-ret_t parse_packet(uint8_t* const arr, packet_t* const packet)
+ret_t parse_packet(char* const buffer, packet_t* const packet)
 {
+    uint8_t motor, state, direction, steps, speed;
 
-    packet->motor = atoi();
-    packet->state = arr[1];
-    packet->direction = arr[2];
-    packet->steps = arr[3];
-    packet->speed = arr[4];
-    /*
-    TODO:if there is such a thing as introspection, check if these are actually integral types and stuff
-    I suppose it just cant fail otherwise lol
-    i think as far as safety goes, integrity of format is checked, simply the actual content  is not chackable for me here
-    it's actually quite annoying the more i think about it.
-    */
+    ret_t ret = tokenize(buffer, motor, state, direction, steps, speed);
+    if (ret != ret_t::SUCCESS)
+        return ret; // if the tokenization fails, we return the error
+
+    packet->motor = motor;
+    packet->state = state;
+    packet->direction = direction;
+    packet->steps = steps;
+    packet->speed = speed;
+
     return ret_t::SUCCESS;
 }
-
-//
-//
-/****************************************************
- * DIMITAR'S CODE ((START))
- * DO NOT TOUCH
- * **DEPRECATED**
- ***************************************************/
-/*
-void receiveMarkers() // NOTE: this protocol relies on there being no random strings thrown at the board
-{
-    static bool receivingInProgress[20] = { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
-    static uint8_t index = 0;
-    char startMarkers[20] = { '<', '[', '(', '{', '@', '-', '$', 'A', 'C', 'E', 'G', 'I', 'K', 'M', 'O', 'Q', 'S', 'U', 'W', 'Y' };
-    char endMarkers[20] = { '>', ']', ')', '}', '!', '%', '&', 'B', 'D', 'F', 'H', 'J', 'L', 'N', 'P', 'R', 'T', 'V', 'X', 'Z' };
-    char data;
-
-    while (Serial.available() > 0 && !newData) {
-        data = Serial.read();
-
-        for (int i = 0; i < 20; i++) {
-            if (receivingInProgress[i]) {
-                if (data != endMarkers[i]) {
-                    receivedChars[index++] = data;
-                    if (index >= NUM_CHARS)
-                        index = NUM_CHARS - 1;
-                } else {
-                    receivedChars[index] = '\0'; // Terminate the string
-                    receivingInProgress[i] = false;
-                    index = 0;
-                    newData = true;
-                }
-            } else if (data == startMarkers[i]) {
-                memset(markerFlags, false, sizeof(markerFlags));
-                markerFlags[i] = true;
-                receivingInProgress[i] = true;
-            }
-        }
-    }
-}
-
-void processReceivedData()
-{
-    if (!newData)
-        return;
-    int markerIndex = identifyReceivedMarker();
-    int motorIndex = markerIndex / 4; // BECAUSE OF INTEGER DIVISION
-    //    Serial.println("Identified motor index: ");
-    //    Serial.print(motorIndex);
-    //    Serial.println(" ");
-    int markerType = markerIndex % 4;
-    //    Serial.println("Identified marker type: ");
-    //    Serial.print(markerType);
-    //    Serial.println(" ");
-
-    if (motorIndex >= 0 && motorIndex < NR_MOTORS) {
-        switch (markerType) {
-        case 0:
-            // TODO
-            // handleContinuousRotationMarker(motorIndex); // FIXME: get these implemented or something
-            break;
-        case 1:
-            setRotationSpeed(motorIndex);
-            break;
-        case 2:
-            setStepsNumber(motorIndex);
-            break;
-        case 3:
-            // TODO
-            // handleSteppedRotation(motorIndex);
-            break;
-        }
-    } else {
-        // Handle error or unexpected marker index
-        Serial.println("Error: Unexpected marker index");
-    }
-
-    newData = false;
-}
-
-int identifyReceivedMarker()
-{
-    for (int i = 0; i < 20; i++) {
-        if (markerFlags[i])
-            return i;
-    }
-    return -1; // Marker not found
-}
-
-void setRotationSpeed(int motorIndex)
-{
-    dimitar_speedRotation[motorIndex] = atof(receivedChars);
-    dimitar_half_pulse_duration_us[motorIndex] = HALF_PULSE_FACTOR / dimitar_speedRotation[motorIndex];
-    dimitar_time_of_next_half_pulse[motorIndex] = micros();
-    Serial.print("Motor ");
-    Serial.print(motorIndex + 1);
-    Serial.println(" rotational speed is [deg/sec]: ");
-    Serial.println(dimitar_speedRotation[motorIndex]);
-}
-
-void setStepsNumber(int motorIndex)
-{
-    //    int motorIndex = identifyReceivedMarker() / 4; // Example to get motorIndex if needed.
-    dimitar_stepsToMove[motorIndex] = atof(receivedChars); // convert the array to integer
-    Serial.print("Motor ");
-    Serial.print(motorIndex + 1);
-    Serial.print(" steps to execute: ");
-    Serial.println(dimitar_stepsToMove[motorIndex]);
-} */

@@ -7,9 +7,8 @@
 #include "../include/__globals__.h"
 #include "../include/pins.h"
 #include <stdint.h>
+#include <stdlib.h> /* strtoul */
 #include <string.h>
-#include <stdlib.h>     /* atoi */
-
 
 /*************************************************
  * |             NEW PROTOCOL                   | *
@@ -17,10 +16,10 @@
  * | ~ | 0x00 | 0x01 | 0x02 | 0x03 | 0x04 | * |   *
  * ---------------------------------------------- *
  *                                                *
- * packet begins with "~" character               *
+ * packet begins with "~" character repeated once *
  * this is to ensure that the packet is not       *
  * confused with dimitar's protocol               *
- * | ~ |                                          *
+ * | ~~ |                                         *
  *                                                *
  * 0x00 - is the motor  byte                      *
  * the motor byte is used to identify which       *
@@ -41,9 +40,13 @@
  *                                                *
  * 0x05 - is the end byte                         *
  * the end byte is used to identify the end       *
- * of a packet                                    *
- * | * |                                          *
+ * of a packet (terminator is '*' repeated once)  *
+ * | ** |                                         *
  *                                                *
+ *                                                *
+ * We then need to send back an ACK packet        *
+ * | ~~ | ACK | ** |                              *
+ * (ACK - is the ACK byte, plaintext "ACK")       *
  *************************************************/
 
 // packet structure
@@ -62,46 +65,28 @@ typedef struct packet {
     {
     }
 
-    inline int to_string(char* const buffer) const
+    void print()
     {
-        return sprintf(buffer, "motor: %d, state: %d, direction: %d, steps: %d, speed: %d", motor, state, direction, steps, speed);
+        Serial.print("Motor: ");
+        Serial.println(motor);
+        Serial.print("State: ");
+        Serial.println(state);
+        Serial.print("Direction: ");
+        Serial.println(direction);
+        Serial.print("Steps: ");
+        Serial.println(steps);
+        Serial.print("Speed: ");
+        Serial.println(speed);
     }
+
 } packet_t;
 
 inline bool new_data { false };
 
 ret_t handle_transmission(packet_t* const);
-ret_t recieve_packet /*__attribute__((unused))*/ (uint8_t* const);
-ret_t parse_packet /*__attribute__((unused))*/ (uint8_t* const, packet_t* const);
+ret_t recieve_packet /*__attribute__((unused))*/ (char* const);
+ret_t parse_packet /*__attribute__((unused))*/ (char* const, packet_t* const);
+const uint8_t parse_token /*__attribute__((unused))*/ (char* const);
+ret_t tokenize /*__attribute__((unused))*/ (char* const, uint8_t&, uint8_t&, uint8_t&, uint8_t&, uint8_t&);
 
-/****************************************************
- * DIMITAR'S CODE ((START))
- * DO NOT TOUCH
- * **DEPRECATED**
- ***************************************************/
-/*
-#define STEPS_PER_REVOLUTION 200
-#define MICROSTEPPING_FACTOR 16
-
-#define CALC_HALF_PULSE_FACTOR(MICROSTEPPING_FACT) (1000000L * 360L / 2L / STEPS_PER_REVOLUTION / MICROSTEPPING_FACT)
-#define HALF_PULSE_FACTOR CALC_HALF_PULSE_FACTOR(MICROSTEPPING_FACTOR)
-
-float dimitar_speedRotation[NR_MOTORS] = { 100, 100, 100, 100, 100 };
-long dimitar_half_pulse_duration_us[NR_MOTORS] = { 562, 562, 562, 562, 562 };
-unsigned long dimitar_time_of_next_half_pulse[NR_MOTORS] = { 0, 0, 0, 0, 0 };
-
-int dimitar_stepsToMove[NR_MOTORS] = { 0, 0, 0, 0, 0 }; // Add this global variable to store steps for each motor.
-
-inline const uint8_t NUM_CHARS = 32;
-inline char receivedChars[NUM_CHARS]; // requires char type for atof()
-inline bool markerFlags[20] { false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false };
-inline bool newData { false };
-
-void receiveMarkers(); // NOTE: this protocol relies on there being no random strings thrown at the board
-void processReceivedData();
-int identifyReceivedMarker();
-
-void setRotationSpeed(int);
-void setStepsNumber(int);
- */
 #endif //_RECIEVE_H
