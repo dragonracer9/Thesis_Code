@@ -23,18 +23,6 @@
 #undef abs
 #define abs(x) ((x) * sign((x))) // better (branchless)
 
-typedef enum class MOTOR_STATE : int {
-    // STEPPED,
-    // CONTINUUOUS,
-
-    UNBLOCKED,
-    BLOCKED,
-} state_t;
-
-typedef enum class direction : int {
-    FWD,
-    BWD
-} dir_t;
 
 // [[unused]]
 /* typedef enum AxisMoveType {
@@ -98,15 +86,5 @@ typedef Stepper stp_t;
 inline constexpr uint32_t calc_half_pulse_fact(const uint8_t u_step_fact)
 {
     return (uint32_t)(1000000L * 360L / 2L / steps_per_revolution / u_step_fact);
-}
-
-/**
- * @brief Takes uint8_t to state_t, where 0 is unblocked and 1 is blocked (other states kinda dont exist atm lol)
- * 
- * @return constexpr state_t 
- */
-inline constexpr state_t int_to_state(uint8_t state)
-{
-    return static_cast<state_t>(state);
 }
 #endif // !STP

@@ -81,14 +81,14 @@ ret_t recieve_packet(char* const packet)
  * @param token The null-terminated string to be parsed.
  * @return The integer value represented by the token.
  */
-const uint8_t parse_token(char* const token)
+const uint32_t parse_token(char* const token)
 {
     /// strtoul converts a string to an unsigned long int
     /// the third argument is the base of the number system
     /// 10 is for decimal
     /// the middle argument is a pointer to a char pointer
     /// when set to null, it is not used
-    const uint8_t val = atoi(token);
+    const uint32_t val = strtoul(token, nullptr, 10);
     // Serial.print("Parsed token: ");
     // Serial.print(token);
     // Serial.print(" -> ");
@@ -108,7 +108,7 @@ const uint8_t parse_token(char* const token)
  * @param speed Reference to the variable to store the speed value.
  * @return The result of the tokenization process.
  */
-ret_t tokenize(char* const buffer, uint8_t& motor, uint8_t& state, uint8_t& direction, uint8_t& steps, uint8_t& speed)
+ret_t tokenize(char* const buffer, uint8_t& motor, uint8_t& state, uint8_t& direction, uint32_t& steps, uint8_t& speed)
 {
     // ngl this is kinda spaghetti
     char* token = nullptr;
@@ -133,34 +133,35 @@ ret_t tokenize(char* const buffer, uint8_t& motor, uint8_t& state, uint8_t& dire
     ret_t ret = get_next_token(buffer);
     if (ret != ret_t::SUCCESS)
         return ret;
-    motor = parse_token(token); // we parse the token into a uint8_t intand save it to the motor variable
+    motor = (uint8_t)parse_token(token); // we parse the token into a uint8_t intand save it to the motor variable
 
     ret = get_next_token(nullptr); // because we're using strtok, we pass null to get the next token (it remembers the buffer from the last call)
     if (ret != ret_t::SUCCESS) // the nullptr thing is weird to me too
         return ret;
-    state = parse_token(token);
+    state = (uint8_t)parse_token(token);
 
     ret = get_next_token(nullptr); // we do this for all the other tokens
     if (ret != ret_t::SUCCESS)
         return ret;
-    direction = parse_token(token);
+    direction = (uint8_t)parse_token(token);
 
     ret = get_next_token(nullptr);
     if (ret != ret_t::SUCCESS)
         return ret;
-    steps = parse_token(token);
+    steps = parse_token(token); // no conversion needed
 
     ret = get_next_token(nullptr);
     if (ret != ret_t::SUCCESS)
         return ret;
-    speed = parse_token(token);
+    speed = (uint8_t)parse_token(token);
 
     return ret_t::SUCCESS; // if we get here, everything went well
 }
 
 ret_t parse_packet(char* const buffer, packet_t* const packet)
 {
-    uint8_t motor, state, direction, steps, speed;
+    uint8_t motor, state, direction, speed;
+    uint32_t steps;
 
     ret_t ret = tokenize(buffer, motor, state, direction, steps, speed);
     if (ret != ret_t::SUCCESS)

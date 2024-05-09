@@ -2,7 +2,6 @@
 
 Stepper stepper;
 
-
 // DEBUG INPUT STRING USED : ~~1,2,3,4,5**
 
 
@@ -25,26 +24,30 @@ void setup() {
   }
 }
 
+void do_thing(packet_t &packet) {
+  Serial.println("Recieving");
+  ret_t ret = handle_transmission(&packet);
+  if (ret == ret_t::SUCCESS) {
+    Serial.println("\nPacket recieved");
+  } else if (ret == ret_t::WRONG_FMT0) {
+    Serial.println("Wrong start");
+  } else if (ret == ret_t::WRONG_FMT1) {
+    Serial.println("Wrong end");
+  } else if (ret == ret_t::ERROR) {
+    Serial.println("ERROR");
+  } else if (ret == ret_t::SPICY) {
+    Serial.println("SPèICY");
+  } else if (ret == ret_t::LITERALLY_IMPOSSIBLE) {
+    Serial.println("IMPOSSIBLE");
+  } else {
+    Serial.println("No packet recieved");
+  }
+}
+
 void loop() {
   packet_t packet;
   if (Serial.read() == '~') {
-    Serial.println("Recieving");
-    ret_t ret = handle_transmission(&packet);
-    if (ret == ret_t::SUCCESS) {
-      Serial.println("\nPacket recieved");
-    } else if (ret == ret_t::WRONG_FMT0) {
-      Serial.println("Wrong start");
-    } else if (ret == ret_t::WRONG_FMT1) {
-      Serial.println("Wrong end");
-    } else if (ret == ret_t::ERROR) {
-      Serial.println("ERROR");
-    } else if (ret == ret_t::SPICY) {
-      Serial.println("SPèICY");
-    } else if (ret == ret_t::LITERALLY_IMPOSSIBLE) {
-      Serial.println("IMPOSSIBLE");
-    } else {
-      Serial.println("No packet recieved");
-    }
+    do_thing(packet);
   }
 
   if (new_data) {
@@ -58,9 +61,12 @@ void loop() {
       Serial.println("not blocked, nice");
       packet.print();
     }
+  } else {
+    Serial.println("No Data");
   }
+  stepper.move_steps(packet.motor, packet.steps, int_to_dir(packet.direction));
   new_data = false;
 
-  Serial.println("No Data");
-  delay(2000);
+
+  delay(500);
 }
