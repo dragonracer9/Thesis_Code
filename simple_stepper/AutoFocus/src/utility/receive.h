@@ -47,6 +47,10 @@
  * We then need to send back an ACK packet        *
  * | ~~ | ACK | ** |                              *
  * (ACK - is the ACK byte, plaintext "ACK")       *
+ *                                                *
+ * ALL WHITESPACE SHOULD BE IGNORED               *
+ * (but for safety, pls only send coherent        *
+ * packets with no whitespace)                    *
  *************************************************/
 
 // packet structure
