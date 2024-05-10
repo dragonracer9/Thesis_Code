@@ -68,5 +68,5 @@ void loop() {
   new_data = false;
 
 
-  delay(500);
+  delay(10);
 }
