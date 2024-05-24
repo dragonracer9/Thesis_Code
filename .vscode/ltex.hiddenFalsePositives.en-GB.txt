@@ -1,0 +1,1 @@
+{"rule":"TOO_LONG_SENTENCE","sentence":"^\\QAs the idea of this library was to improve readability and maintainability of the communications protocol written by Dimitar and wrap the stepper controls in nice functions to abstract away the actual calculations, it is probably a good idea to explain the newer concepts used in this library for the uninitiated.\\E$"}

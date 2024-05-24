@@ -33,6 +33,11 @@ def sobel_grad(img):
     abs_grad_y = cv.convertScaleAbs(grad_y)
     return cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
+def send():
+    return 0
+def recieve():
+    return 0
+
 
 def do_focus_thing(focus_measure, dir):
     if dir==0: 
