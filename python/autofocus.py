@@ -1,7 +1,7 @@
 import time
 import numpy as np
-from rich.traceback import install
-install(show_locals=True)
+# from rich.traceback import install
+# install(show_locals=True)
 import cv2 as cv
 import sys
 
@@ -15,6 +15,8 @@ if not cap.isOpened():
 # Define the codec and create VideoWriter object
 fourcc = cv.VideoWriter_fourcc(*'XVID')
 out = cv.VideoWriter('output.avi', fourcc, 20.0, (1200, 960))
+
+log = open("log.log", "a")   
 
 def var_of_laplace(img):
     return cv.Laplacian(img, cv.CV_64F).var()
@@ -64,10 +66,12 @@ while True:
     
     focus_measure = var_of_laplace(image)
     
-    if focus_measure < LIMIT:
-        direction = np.sign(focus_measure-prev_focus_measure)
-        do_focus_thing(focus_measure=focus_measure, dir=direction)
+    #if focus_measure < LIMIT:
+    direction = np.sign(focus_measure-prev_focus_measure)
+        #do_focus_thing(focus_measure=focus_measure, dir=direction)
         
+    print(focus_measure, direction)
+    log.write(f"{focus_measure}, {direction}\n")
         
     prev_focus_measure = focus_measure
     
