@@ -26,6 +26,10 @@ ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek(
     return ret_t::SUCCESS;
 }
 
+ret_t send_end_flag(void) {
+    Serial.print("~~END**");
+}
+
 /** @brief Receives a packet from the serial communication and validates its format.
  *
  * This function reads characters from the serial communication until it receives a complete packet.

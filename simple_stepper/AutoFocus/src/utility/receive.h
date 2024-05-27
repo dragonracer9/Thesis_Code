@@ -92,6 +92,7 @@ typedef struct packet {
 inline bool new_data { false };
 
 ret_t handle_transmission(packet_t* const);
+ret_t send_end_flag(void);
 ret_t recieve_packet /*__attribute__((unused))*/ (char* const);
 ret_t parse_packet /*__attribute__((unused))*/ (char* const, packet_t* const);
 const uint32_t parse_token /*__attribute__((unused))*/ (char* const);

@@ -1,9 +1,19 @@
 import time
+
 import numpy as np
-# from rich.traceback import install
-# install(show_locals=True)
+from numpy.typing import NDArray
+from typing import Any
+
 import cv2 as cv
-import sys
+
+from rich import print
+from rich.progress import track
+from rich.traceback import install
+install(show_locals=True)
+
+import serial
+
+arduino = serial.Serial(port='COM3',   baudrate=115200, timeout=.1)
 
 LIMIT = 100 # dunno, it's just a variable, man
 
@@ -15,8 +25,6 @@ if not cap.isOpened():
 # Define the codec and create VideoWriter object
 fourcc = cv.VideoWriter_fourcc(*'XVID')
 out = cv.VideoWriter('output.avi', fourcc, 20.0, (1200, 960))
-
-log = open("log.log", "a")   
 
 def var_of_laplace(img):
     return cv.Laplacian(img, cv.CV_64F).var()
@@ -33,10 +41,16 @@ def sobel_grad(img):
     abs_grad_y = cv.convertScaleAbs(grad_y)
     return cv.addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0)
 
-def send():
-    return 0
+def transmit(x : NDArray) -> Any:
+    for i in track(range(5)):
+        arduino.write(bytes(x[i],   'utf-8'))
+    time.sleep(0.05)
+    data = arduino.readline()
+    return  data
+
 def recieve():
-    return 0
+    data = arduino.readline()
+    return  data
 
 
 def do_focus_thing(focus_measure, dir):
@@ -71,12 +85,10 @@ while True:
     
     focus_measure = var_of_laplace(image)
     
-    #if focus_measure < LIMIT:
-    direction = np.sign(focus_measure-prev_focus_measure)
-        #do_focus_thing(focus_measure=focus_measure, dir=direction)
+    if focus_measure < LIMIT:
+        direction = np.sign(focus_measure-prev_focus_measure)
+        do_focus_thing(focus_measure=focus_measure, dir=direction)
         
-    print(focus_measure, direction)
-    log.write(f"{focus_measure}, {direction}\n")
         
     prev_focus_measure = focus_measure
     
