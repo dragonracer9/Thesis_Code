@@ -72,5 +72,6 @@ void loop()
 
     new_data = false;
 
-    delay(10);
+
+    delay(1000);
 }
