@@ -6,8 +6,8 @@ const int dirYPin = 6;  // Y.DIR
 const int stepZPin = 4; // Z.STEP
 const int dirZPin = 7;  // Z.DIR
 
-int stepPin = stepXPin;
-int dirPin = dirXPin;
+int stepPin = stepZPin;
+int dirPin = dirZPin;
 
 const int stepsPerRev = 200;
 int pulseWidthMicros = 100; // microseconds

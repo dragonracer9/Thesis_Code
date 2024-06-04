@@ -68,10 +68,9 @@ void loop()
         Serial.println("No Data");
     }
     stepper.move_steps(packet.motor, packet.steps, int_to_dir(packet.direction));
-    send_end_flag(); //  to tell the python script that we completed the move
+    //send_end_flag(); //  to tell the python script that we completed the move
 
     new_data = false;
 
-
-    delay(1000);
+    delay(10);
 }

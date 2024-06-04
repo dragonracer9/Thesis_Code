@@ -27,7 +27,7 @@ ret_t handle_transmission(packet_t* const motor) // remember to use Serial.peek(
 }
 
 ret_t send_end_flag(void) {
-    Serial.print("~~END**");
+    Serial.println("~~END**");
 }
 
 /** @brief Receives a packet from the serial communication and validates its format.
