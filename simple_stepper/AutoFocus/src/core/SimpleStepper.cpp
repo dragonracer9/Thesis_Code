@@ -3,6 +3,13 @@
 #endif
 #include "SimpleStepper.h"
 
+Stepper::Stepper() noexcept
+    : motors { state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED,
+        state_t::BLOCKED, state_t::BLOCKED }
+    , rotation_speeds { 100, 100, 100, 100, 100 }
+    , half_pulse_duration_us { 562, 562, 562, 562, 562 }
+{
+}
 
 /**
  * @brief initialises stepper pins
@@ -62,7 +69,8 @@ ret_t Stepper::set_speed(const uint8_t motor_index, const uint8_t speed) noexcep
     const uint32_t half_pulse)
 {
     if (motors[motorIndex] == state_t::BLOCKED)
-        return ret_t::LOCKED;
+        return ret_t::LOCKED; // dunno why we do this, this wouldnt really be thread-safe nor do we have sensors to detect a blocked motor,
+    //  so actually, this is kinda just for show ig?
 
     digitalWrite(DIR_PINS[motorIndex],
         (uint8_t)dir); // Set the direction of the motor movement
@@ -71,7 +79,7 @@ ret_t Stepper::set_speed(const uint8_t motor_index, const uint8_t speed) noexcep
         digitalWrite(MOTOR_PINS[motorIndex], HIGH);
         delayMicroseconds(half_pulse);
         digitalWrite(MOTOR_PINS[motorIndex], LOW);
-        delayMicroseconds(half_pulse); // this runs 
+        delayMicroseconds(half_pulse); // this runs
     }
     return ret_t::SUCCESS;
 }

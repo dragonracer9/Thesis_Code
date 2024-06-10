@@ -23,7 +23,6 @@
 #undef abs
 #define abs(x) ((x) * sign((x))) // better (branchless)
 
-
 // [[unused]]
 /* typedef enum AxisMoveType {
     NONE,
@@ -43,19 +42,13 @@ inline constexpr state_t int_to_state(uint8_t);
 
 class Stepper {
 public:
-    constexpr Stepper(void) noexcept
-        : motors { state_t::BLOCKED, state_t::BLOCKED, state_t::BLOCKED,
-            state_t::BLOCKED, state_t::BLOCKED }
-        , rotation_speeds { 100, 100, 100, 100, 100 }
-        , stepsToMove { 0, 0, 0, 0, 0 }
-        , half_pulse_duration_us { 562, 562, 562, 562, 562 }
-    {
-    }
+    Stepper(void) noexcept;
     /* constexpr Stepper(Stepper&&) = delete; // dont really need move semantics
     constexpr Stepper(const Stepper&) = delete;
     constexpr Stepper& operator=(Stepper&&) = delete;
     constexpr Stepper& operator=(const Stepper&) = delete; */
     ~Stepper() = default;
+    ret_t __initialise__();
 
     ret_t set_pins(void) const noexcept;
     ret_t set_speed(const uint8_t, const uint8_t) noexcept;
@@ -70,7 +63,6 @@ private:
     state_t motors[NR_MOTORS];
 
     float rotation_speeds[NR_MOTORS];
-    uint32_t stepsToMove[NR_MOTORS];
 
     uint32_t half_pulse_duration_us[NR_MOTORS];
 };
