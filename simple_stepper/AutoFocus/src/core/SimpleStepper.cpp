@@ -14,8 +14,8 @@ ret_t Stepper::set_pins(void) const //[[noexcept]]
     for (uint8_t i = 0; i < NR_MOTORS; i++) {
         pinMode(MOTOR_PINS[i], OUTPUT);
         pinMode(DIR_PINS[i], OUTPUT);
-        /* digitalWrite(motorPins[i], LOW);
-        digitalWrite(dirPins[i], LOW); */
+        digitalWrite(MOTOR_PINS[i], LOW); // hopefully this prevents jittering
+        /* digitalWrite(dirPins[i], LOW); */
         // TODO: determine if this is necessary
     } // Set the motor pins as outputs
     // since all motors are locked, we can set the enable pin to low
@@ -39,7 +39,7 @@ static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_f
  * @param speed  (double)
  * @return ret_t
  */
-[[nodiscard]] ret_t Stepper::set_speed(const uint8_t motor_index, const uint8_t speed) noexcept //[[noexcept]]
+ret_t Stepper::set_speed(const uint8_t motor_index, const uint8_t speed) noexcept //[[noexcept]]
 {
     rotation_speeds[motor_index] = speed;
     half_pulse_duration_us[motor_index] = (uint32_t)(half_pulse_fact / (float)speed);
@@ -71,7 +71,7 @@ static constexpr uint32_t half_pulse_fact = calc_half_pulse_fact(microstepping_f
         digitalWrite(MOTOR_PINS[motorIndex], HIGH);
         delayMicroseconds(half_pulse);
         digitalWrite(MOTOR_PINS[motorIndex], LOW);
-        delayMicroseconds(half_pulse);
+        delayMicroseconds(half_pulse); // this runs 
     }
     return ret_t::SUCCESS;
 }
